@@ -31,7 +31,7 @@ print(f"Precisión del modelo: {precision*100:.2f}%")
 # --- Fase 6: Implementación ---
 nuevo_vehiculo = [[120000, 10, 15, 80, 4, 1, 650, 1]]
 prediccion = modelo.predict(nuevo_vehiculo)[0]
-
+#1
 if prediccion == 1:
     print("La predicción es: El vehículo se quedará sin frenos (1)")
 else:
