@@ -1,14 +1,15 @@
+from fastapi import FastAPI
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from io import StringIO
 
-# --- Fase 2: Cargar y arreglar los datos ---
-# Abrimos el CSV y eliminamos las comillas que encierran cada fila
-with open("falla_frenos.csv", "r", encoding="utf-8") as f:
-    raw = f.read().replace('"', '')  # quitamos las comillas dobles
+app = FastAPI()
 
-# Ahora parseamos el contenido ya limpio
+# --- Fase 2: Cargar y arreglar los datos ---
+with open("falla_frenos.csv", "r", encoding="utf-8") as f:
+    raw = f.read().replace('"', '')
+
 df = pd.read_csv(StringIO(raw))
 
 print("Columnas detectadas:", df.columns.tolist())
@@ -28,11 +29,37 @@ predicciones = modelo.predict(X)
 precision = accuracy_score(y, predicciones)
 print(f"Precisión del modelo: {precision*100:.2f}%")
 
-# --- Fase 6: Implementación ---
-nuevo_vehiculo = [[120000, 10, 15, 80, 4, 1, 650, 1]]
-prediccion = modelo.predict(nuevo_vehiculo)[0]
+
+# --- Fase 6: Implementación API ---
+
+@app.get("/")
+def home():
+    return {"mensaje": "API de predicción de fallas en frenos"}
+
+@app.post("/predecir/")
+def predecir(datos: dict):
+    nuevo_vehiculo = [[
+        datos["kms_recorridos"],
+        datos["años_uso"],
+        datos["ultima_revision"],
+        datos["temperatura_frenos"],
+        datos["cambios_pastillas"],
+        datos["estilo_conduccion"],
+        datos["carga_promedio"],
+        datos["luz_alarma_freno"]
+    ]]
+    prediccion = modelo.predict(nuevo_vehiculo)[0]
+    return {
+        "prediccion": int(prediccion),
+        "precision_entrenamiento": f"{precision*100:.2f}%"
+    }
+
+
+# --- prueba ---
+#nuevo_vehiculo = [[120000, 10, 15, 80, 4, 1, 650, 1]]
+#prediccion = modelo.predict(nuevo_vehiculo)[0]
 #1
-if prediccion == 1:
-    print("La predicción es: El vehículo se quedará sin frenos (1)")
-else:
-    print("La predicción es: El vehículo no se quedará sin frenos (0)")
+#if prediccion == 1:
+#    print("La predicción es: El vehículo se quedará sin frenos (1)")
+#else:
+#    print("La predicción es: El vehículo no se quedará sin frenos (0)")
